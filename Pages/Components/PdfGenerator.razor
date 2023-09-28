@@ -1,0 +1,144 @@
+﻿<h4><b>Text Convertor</b></h4>
+@using System.Text.Json;
+
+@page "/Components/PdfGenerator"
+@inject TextConvertor _TextConvertor;
+@inject IJSRuntime _IJSRuntime;
+
+
+<br />
+
+
+<button class="btn btn-primary" @onclick="pdfHandler"> Generate Pdf</button>
+<button class="btn btn-success" @onclick="imageHandler"> Generate image</button>
+<button class="btn btn-danger" @onclick="svgHandler"> Generate svg</button>
+<br />
+<br />
+
+ @* <img height="1000px" width="1200px" id="pic"/><br/><br/> *@
+<div class="form-group shadow-textarea">
+    <textarea style="height: 300px;width:100%" @oninput="textHandler" class="form-control z-depth-1" id="exampleFormControlTextarea6" rows="3" placeholder="Write something here..."></textarea>
+</div>
+
+<div class="container parent-con">
+<div class="row gx-3">
+@if (blobUrls != null&& format== "svg")
+{
+ @foreach (var blobUrl in blobUrls)
+ {
+                <div class="col-md-4 mt-3">
+                    <div class="image-wrap" >
+                        <iframe src="@blobUrl" /><br /><button class="btn btn-success " @onclick="()=>{viewSvgHandler(blobUrl);}">view</button>
+
+        </div>
+        </div>
+ }
+}
+        @if (blobUrls != null && format == "png")
+        {
+            @foreach (var blobUrl in blobUrls)
+            {
+                <div class="col-md-3 mt-3">
+                    <div class="image-wrap">
+                        <img src="@blobUrl" @onclick="()=>{viewHandler(blobUrl);}" />
+                    </div>
+                </div>
+            }
+        }
+</div>
+</div>
+
+
+@code {
+    string input{ get; set; } = string.Empty;
+    string text{ get; set; } = "hello Enter a text";
+    string details { get; set; } = "view details";
+    int num { get; set; } = 11;
+    string path { get; set; } = "";
+    string format { get; set; } = string.Empty;
+    public List<string> blobUrls { get; set; } 
+
+    public Image? image;
+
+    public class Page
+    {
+        public int number { get; set; }
+        public string data { get; set; }
+    }
+
+    public class Image
+    {
+        public string name { get; set; }
+        public string type_ { get; set; }
+        public List<Page> pages {get; set;}
+    }
+    public void textHandler(ChangeEventArgs e)
+    {
+        input = e.Value.ToString();
+        StateHasChanged();
+    }
+
+    public async void editHandler()
+    {
+        await _IJSRuntime.InvokeVoidAsync("openEditor", DotNetObjectReference.Create(this));
+    }
+
+
+    public async void imageHandler()
+    {
+        format = "png";
+        await generateImage(input,"png");
+    }
+
+    public async void pdfHandler()
+    {
+        format = "pdf";
+        await generatePdf(input, "pdf");
+    }
+
+    public async void svgHandler()
+    {
+        format = "svg";
+        await generateImage(input, "svg");
+    }
+
+    public async void viewHandler(string url)
+    {
+        await _IJSRuntime.InvokeVoidAsync("viewImage",url,"png");
+        StateHasChanged();
+    }
+
+    public async void viewSvgHandler(string url)
+    {
+        details = "hello";
+        await _IJSRuntime.InvokeVoidAsync("viewsvg", url);
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public void textUpdate(string data)
+    {
+        text = data;
+        input = data;
+        StateHasChanged();
+    }
+
+    public async Task generatePdf(string data,string format)
+    {
+        _TextConvertor.SetText(data);
+        text = _TextConvertor.GetPdfBase64EncString();
+        await _IJSRuntime.InvokeVoidAsync("openPdf", text ,format);
+    }
+
+    public async Task generateImage(string data,string format)
+    {
+        _TextConvertor.SetText(data);
+        var result =  _TextConvertor.GetImageJsonString(format);
+        image = JsonSerializer.Deserialize<Image>(result);
+        num = image.pages.Count;
+        var Mime = (format == "svg") ? "svg+xml" : "png";
+        var Urls =  await _IJSRuntime.InvokeAsync<List<string>>("openImage", image.pages, Mime );
+        blobUrls = Urls;
+        StateHasChanged();
+    }
+}

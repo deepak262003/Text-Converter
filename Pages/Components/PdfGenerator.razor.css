@@ -1,0 +1,46 @@
+﻿
+
+﻿.page-wrap {
+    background-image: linear-gradient(to bottom right,black,cadetblue,black,cadetblue,grey,black);
+    border-radius: 10px;
+    padding: 5px;
+}
+
+iframe {
+    height: 350px;
+    width: 250px;
+}
+
+img {
+    height: 300px;
+    width: 200px;
+}
+
+.image-wrap {
+    margin: 10px;
+    text-align: center;
+    padding: 10px;
+    border: 1px solid lightgray;
+    border-radius: 10px;
+    width: fit-content;
+    background-color: white;
+}
+
+    .image-wrap:hover {
+        background-color: dodgerblue;
+    }
+
+
+@media (max-width: 1023.98px) {
+    .container {
+        justify-content: flex-start;
+    }
+}
+
+.shadow-textarea textarea.form-control::placeholder {
+    font-weight: 300;
+}
+
+.shadow-textarea textarea.form-control {
+    padding-left: 0.8rem;
+}
