@@ -17,7 +17,7 @@ namespace CsBindgen
 
 
         [DllImport(__DllName, EntryPoint = "TypstCreate", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern byte* TypstCreate(byte* typst_source, byte* output_format);
+        public static extern byte* TypstCreate(byte* typst_source, byte* output_format, byte* image_data);
 
 
     }
